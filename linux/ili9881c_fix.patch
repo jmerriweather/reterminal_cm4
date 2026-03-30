@@ -1,0 +1,19 @@
+--- a/drivers/gpu/drm/panel/panel-ilitek-ili9881c.c	2026-01-30 09:32:36.354122075 +0000
++++ a/drivers/gpu/drm/panel/panel-ilitek-ili9881c.c	2026-01-30 09:34:00.238613939 +0000
+@@ -2470,7 +2470,7 @@
+ 	.init = k101_im2byl02_init,
+ 	.init_length = ARRAY_SIZE(k101_im2byl02_init),
+ 	.mode = &k101_im2byl02_default_mode,
+-	.mode_flags = MIPI_DSI_MODE_VIDEO_SYNC_PULSE,
++	.mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST,
+ 	.lanes = 4,
+ };
+ 
+@@ -2552,6 +2552,7 @@
+ 	{ .compatible = "nwe,nwe080", .data = &nwe080_desc },
+ 	{ .compatible = "raspberrypi,dsi-5inch", &rpi_5inch_desc },
+ 	{ .compatible = "raspberrypi,dsi-7inch", &rpi_7inch_desc },
++	{ .compatible = "gjx,gjx101c7", .data = &k101_im2byl02_desc },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, ili9881c_of_match);

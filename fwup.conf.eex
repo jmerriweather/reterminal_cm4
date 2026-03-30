@@ -1,0 +1,310 @@
+# Firmware configuration file for the Raspberry Pi 4 and CM4 SeeedStudio Devices
+#
+# IMPORTANT:
+# Edit `fwup.conf.eex` and run `mix generate_fwup_conf` to generate fwup.conf.
+#
+# Uses RPi4 native tryboot for automatic firmware rollback.
+# See fwup_include/fwup-common.conf for the partition layout.
+#
+require-fwup-version="1.0.0"
+
+include("${NERVES_SDK_IMAGES:-.}/fwup_include/fwup-common.conf")
+<%
+# Boot resources that go to the active boot partition.
+# start4.elf is handled separately — on complete it goes to AUTOBOOT + BOOT,
+# on upgrade it only goes to the target boot partition.
+boot_resources = [
+  %{name: "fixup4.dat", path: "${NERVES_SYSTEM}/images/rpi-firmware/fixup4x.dat"},
+  %{name: "config.txt", path: "${NERVES_SYSTEM}/images/config.txt"},
+  %{name: "kernel8.img", path: "${NERVES_SYSTEM}/images/Image"},
+  %{name: "bcm2711-rpi-4-b.dtb", path: "${NERVES_SYSTEM}/images/bcm2711-rpi-4-b.dtb"},
+  %{name: "bcm2711-rpi-cm4.dtb", path: "${NERVES_SYSTEM}/images/bcm2711-rpi-cm4.dtb"},
+  %{name: "bcm2711-rpi-400.dtb", path: "${NERVES_SYSTEM}/images/bcm2711-rpi-400.dtb"},
+  %{name: "overlays/dwc2.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/dwc2.dtbo"},
+  %{name: "overlays/i2c-mux.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/i2c-mux.dtbo"},
+  %{name: "overlays/imx219.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/imx219.dtbo"},
+  %{name: "overlays/imx296.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/imx296.dtbo"},
+  %{name: "overlays/imx477.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/imx477.dtbo"},
+  %{name: "overlays/imx708.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/imx708.dtbo"},
+  %{name: "overlays/miniuart-bt.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/miniuart-bt.dtbo"},
+  %{name: "overlays/ov5647.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/ov5647.dtbo"},
+  %{name: "overlays/overlay_map.dtb", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/overlay_map.dtb"},
+  %{name: "overlays/pwm.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/pwm.dtbo"},
+  %{name: "overlays/pwm-2chan.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/pwm-2chan.dtbo"},
+  %{name: "overlays/pwm1.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/pwm1.dtbo"},
+  %{name: "overlays/ramoops-pi4.dtbo", path: "${NERVES_SYSTEM}/images/ramoops-pi4-overlay.dtb"},
+  %{name: "overlays/rpi-backlight.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/rpi-backlight.dtbo"},
+  %{name: "overlays/rpi-ft5406.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/rpi-ft5406.dtbo"},
+  %{name: "overlays/tc358743.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/tc358743.dtbo"},
+  %{name: "overlays/vc4-kms-dsi-7inch.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/vc4-kms-dsi-7inch.dtbo"},
+  %{name: "overlays/vc4-kms-dsi-ili9881-5inch.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/vc4-kms-dsi-ili9881-5inch.dtbo"},
+  %{name: "overlays/vc4-kms-dsi-ili9881-7inch.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/vc4-kms-dsi-ili9881-7inch.dtbo"},
+  %{name: "overlays/vc4-kms-v3d.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/vc4-kms-v3d.dtbo"},
+  %{name: "overlays/vc4-kms-v3d-pi4.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/vc4-kms-v3d-pi4.dtbo"},
+  %{name: "overlays/w1-gpio-pullup.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/w1-gpio-pullup.dtbo"},
+  # TPM
+  %{name: "overlays/tpm-spi-slx9670.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/tpm-spi-slx9670.dtbo"},
+  # Rethings resources
+  %{name: "overlays/lis331dlh.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/lis331dlh.dtbo"},
+  %{name: "overlays/reTerminal-brige.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/reTerminal-bridge.dtbo"},
+  %{name: "overlays/reTerminal.dtbo", path: "${NERVES_SYSTEM}/images/rpi-firmware/overlays/reTerminal.dtbo"},
+]
+
+# start4.elf is a special-case resource (written to AUTOBOOT on complete only)
+start4_elf = %{name: "start4.elf", path: "${NERVES_SYSTEM}/images/rpi-firmware/start4x.elf"}
+
+# All resources for file-resource declarations (boot + start4 + cmdline variants)
+all_resources = [start4_elf] ++ boot_resources ++ [
+  %{name: "cmdline-a.txt", path: "${NERVES_SYSTEM}/images/cmdline-a.txt"},
+  %{name: "cmdline-b.txt", path: "${NERVES_SYSTEM}/images/cmdline-b.txt"},
+]
+%>
+# File resources are listed in the order that they are included in the .fw file
+# This is important, since this is the order that they're written on a firmware
+# update due to the event driven nature of the update system.
+<%= for resource <- all_resources do %>file-resource <%= resource.name %> { host-path = "<%= resource.path %>" }
+<% end %>
+file-resource rootfs.img {
+    host-path = ${ROOTFS}
+
+    # Error out if the rootfs size exceeds the partition size
+    assert-size-lte = ${ROOTFS_A_PART_COUNT}
+}
+
+# This firmware task writes everything to the destination media.
+# It is run on a fresh SD card / eMMC.
+task complete {
+    # Only match if not mounted
+    require-unmounted-destination = true
+
+    on-init {
+        mbr_write(mbr)
+
+        fat_mkfs(${BOOT_A_PART_OFFSET}, ${BOOT_A_PART_COUNT})
+        fat_setlabel(${BOOT_A_PART_OFFSET}, "BOOT-A")
+        fat_mkdir(${BOOT_A_PART_OFFSET}, "overlays")
+
+        fat_mkfs(${AUTOBOOT_PART_OFFSET}, ${AUTOBOOT_PART_COUNT})
+        fat_setlabel(${AUTOBOOT_PART_OFFSET}, "AUTOBOOT")
+        # RPi bootloader needs an empty config.txt on the boot-flagged partition
+        fat_touch(${AUTOBOOT_PART_OFFSET}, "config.txt")
+
+        uboot_clearenv(uboot-env)
+
+        include("${NERVES_PROVISIONING}")
+
+        uboot_setenv(uboot-env, "nerves_fw_devpath", ${NERVES_FW_DEVPATH})
+        uboot_setenv(uboot-env, "a.nerves_fw_validated", "1")
+        uboot_setenv(uboot-env, "a.nerves_fw_application_part0_devpath", ${NERVES_FW_APPLICATION_PART0_DEVPATH})
+        uboot_setenv(uboot-env, "a.nerves_fw_application_part0_fstype", ${NERVES_FW_APPLICATION_PART0_FSTYPE})
+        uboot_setenv(uboot-env, "a.nerves_fw_application_part0_target", ${NERVES_FW_APPLICATION_PART0_TARGET})
+        uboot_setenv(uboot-env, "a.nerves_fw_product", ${NERVES_FW_PRODUCT})
+        uboot_setenv(uboot-env, "a.nerves_fw_description", ${NERVES_FW_DESCRIPTION})
+        uboot_setenv(uboot-env, "a.nerves_fw_version", ${NERVES_FW_VERSION})
+        uboot_setenv(uboot-env, "a.nerves_fw_platform", ${NERVES_FW_PLATFORM})
+        uboot_setenv(uboot-env, "a.nerves_fw_architecture", ${NERVES_FW_ARCHITECTURE})
+        uboot_setenv(uboot-env, "a.nerves_fw_author", ${NERVES_FW_AUTHOR})
+        uboot_setenv(uboot-env, "a.nerves_fw_vcs_identifier", ${NERVES_FW_VCS_IDENTIFIER})
+        uboot_setenv(uboot-env, "a.nerves_fw_misc", ${NERVES_FW_MISC})
+        uboot_setenv(uboot-env, "a.nerves_fw_uuid", "\${FWUP_META_UUID}")
+    }
+
+    # Write autoboot-a.txt to AUTOBOOT partition (A is the default boot)
+    on-resource autoboot-a.txt { fat_write(${AUTOBOOT_PART_OFFSET}, "autoboot.txt") }
+
+    # Write start4.elf to AUTOBOOT first, then copy to BOOT_A
+    on-resource start4.elf {
+        fat_write(${AUTOBOOT_PART_OFFSET}, "start4.elf")
+        fat_cp(${AUTOBOOT_PART_OFFSET}, "start4.elf", ${BOOT_A_PART_OFFSET}, "start4.elf")
+    }
+
+    # Write boot resources to BOOT_A
+<%= for resource <- boot_resources do %>    on-resource <%= resource.name %> { fat_write(${BOOT_A_PART_OFFSET}, "<%= resource.name %>") }
+<% end %>
+    # Write cmdline-a.txt as cmdline.txt to BOOT_A
+    on-resource cmdline-a.txt { fat_write(${BOOT_A_PART_OFFSET}, "cmdline.txt") }
+
+    # cmdline-b.txt is included in the firmware archive but not written on complete
+    on-resource cmdline-b.txt { }
+
+    on-resource rootfs.img {
+        # write to the first rootfs partition
+        raw_write(${ROOTFS_A_PART_OFFSET})
+    }
+
+    on-finish {
+        # Clear out any old data in the B partition that might be mistaken for
+        # a file system. This is mostly to avoid confusion in humans when
+        # reprogramming SDCards with unknown contents.
+        raw_memset(${BOOT_B_PART_OFFSET}, 256, 0xff)
+        raw_memset(${ROOTFS_B_PART_OFFSET}, 256, 0xff)
+
+        # Invalidate the application data partition so that it is guaranteed to
+        # trigger the corrupt filesystem detection code on first boot and get
+        # formatted. If this isn't done and an old SDCard is reused, the
+        # application data could be in a weird state.
+        raw_memset(${APP_PART_OFFSET}, 256, 0xff)
+    }
+}
+
+# Upgrade partition A (currently running on B)
+task upgrade.a {
+    require-path-at-offset("/", ${ROOTFS_B_PART_OFFSET})
+
+    # Verify the expected platform/architecture
+    require-uboot-variable(uboot-env, "b.nerves_fw_platform", "${NERVES_FW_PLATFORM}")
+    require-uboot-variable(uboot-env, "b.nerves_fw_architecture", "${NERVES_FW_ARCHITECTURE}")
+    require-uboot-variable(uboot-env, "b.nerves_fw_validated", "1")
+
+    on-init {
+        info("Upgrading partition A")
+
+        # Clear firmware information in case this update gets interrupted midway.
+        uboot_setenv(uboot-env, "a.nerves_fw_validated", "0")
+        uboot_unsetenv(uboot-env, "a.nerves_fw_version")
+        uboot_unsetenv(uboot-env, "a.nerves_fw_platform")
+        uboot_unsetenv(uboot-env, "a.nerves_fw_architecture")
+        uboot_unsetenv(uboot-env, "a.nerves_fw_uuid")
+
+        # Reset the previous contents of the A boot partition
+        fat_mkfs(${BOOT_A_PART_OFFSET}, ${BOOT_A_PART_COUNT})
+        fat_setlabel(${BOOT_A_PART_OFFSET}, "BOOT-A")
+        fat_mkdir(${BOOT_A_PART_OFFSET}, "overlays")
+
+        trim(${ROOTFS_A_PART_OFFSET}, ${ROOTFS_A_PART_COUNT})
+    }
+
+    # Autoboot resources are not written during upgrade — only on validate
+    on-resource autoboot-a.txt { }
+    on-resource autoboot-b.txt { }
+
+    # start4.elf only goes to target boot partition (not AUTOBOOT) during upgrade
+    on-resource start4.elf { fat_write(${BOOT_A_PART_OFFSET}, "start4.elf") }
+
+    # Write boot resources to BOOT_A
+<%= for resource <- boot_resources do %>    on-resource <%= resource.name %> { fat_write(${BOOT_A_PART_OFFSET}, "<%= resource.name %>") }
+<% end %>
+    on-resource cmdline-a.txt { fat_write(${BOOT_A_PART_OFFSET}, "cmdline.txt") }
+    on-resource cmdline-b.txt { }
+
+    on-resource rootfs.img {
+        delta-source-raw-offset=${ROOTFS_B_PART_OFFSET}
+        delta-source-raw-count=${ROOTFS_B_PART_COUNT}
+        raw_write(${ROOTFS_A_PART_OFFSET})
+    }
+
+    on-finish {
+        # Update firmware metadata
+        uboot_setenv(uboot-env, "a.nerves_fw_application_part0_devpath", ${NERVES_FW_APPLICATION_PART0_DEVPATH})
+        uboot_setenv(uboot-env, "a.nerves_fw_application_part0_fstype", ${NERVES_FW_APPLICATION_PART0_FSTYPE})
+        uboot_setenv(uboot-env, "a.nerves_fw_application_part0_target", ${NERVES_FW_APPLICATION_PART0_TARGET})
+        uboot_setenv(uboot-env, "a.nerves_fw_product", ${NERVES_FW_PRODUCT})
+        uboot_setenv(uboot-env, "a.nerves_fw_description", ${NERVES_FW_DESCRIPTION})
+        uboot_setenv(uboot-env, "a.nerves_fw_version", ${NERVES_FW_VERSION})
+        uboot_setenv(uboot-env, "a.nerves_fw_platform", ${NERVES_FW_PLATFORM})
+        uboot_setenv(uboot-env, "a.nerves_fw_architecture", ${NERVES_FW_ARCHITECTURE})
+        uboot_setenv(uboot-env, "a.nerves_fw_author", ${NERVES_FW_AUTHOR})
+        uboot_setenv(uboot-env, "a.nerves_fw_vcs_identifier", ${NERVES_FW_VCS_IDENTIFIER})
+        uboot_setenv(uboot-env, "a.nerves_fw_misc", ${NERVES_FW_MISC})
+        uboot_setenv(uboot-env, "a.nerves_fw_uuid", "\${FWUP_META_UUID}")
+
+        # Tryboot: reboot into the new partition for validation
+        # The bootloader will use [tryboot] section of autoboot.txt
+        # If validate is never called, next normal reboot goes back to B
+        reboot_param("0 tryboot")
+    }
+
+    on-error {
+    }
+}
+
+# Upgrade partition B (currently running on A)
+task upgrade.b {
+    require-path-at-offset("/", ${ROOTFS_A_PART_OFFSET})
+
+    # Verify the expected platform/architecture
+    require-uboot-variable(uboot-env, "a.nerves_fw_platform", "${NERVES_FW_PLATFORM}")
+    require-uboot-variable(uboot-env, "a.nerves_fw_architecture", "${NERVES_FW_ARCHITECTURE}")
+    require-uboot-variable(uboot-env, "a.nerves_fw_validated", "1")
+
+    on-init {
+        info("Upgrading partition B")
+
+        uboot_setenv(uboot-env, "b.nerves_fw_validated", "0")
+        uboot_unsetenv(uboot-env, "b.nerves_fw_version")
+        uboot_unsetenv(uboot-env, "b.nerves_fw_platform")
+        uboot_unsetenv(uboot-env, "b.nerves_fw_architecture")
+        uboot_unsetenv(uboot-env, "b.nerves_fw_uuid")
+
+        fat_mkfs(${BOOT_B_PART_OFFSET}, ${BOOT_B_PART_COUNT})
+        fat_setlabel(${BOOT_B_PART_OFFSET}, "BOOT-B")
+        fat_mkdir(${BOOT_B_PART_OFFSET}, "overlays")
+
+        trim(${ROOTFS_B_PART_OFFSET}, ${ROOTFS_B_PART_COUNT})
+    }
+
+    on-resource autoboot-a.txt { }
+    on-resource autoboot-b.txt { }
+
+    # start4.elf only goes to target boot partition (not AUTOBOOT) during upgrade
+    on-resource start4.elf { fat_write(${BOOT_B_PART_OFFSET}, "start4.elf") }
+
+    # Write boot resources to BOOT_B
+<%= for resource <- boot_resources do %>    on-resource <%= resource.name %> { fat_write(${BOOT_B_PART_OFFSET}, "<%= resource.name %>") }
+<% end %>
+    on-resource cmdline-a.txt { }
+    on-resource cmdline-b.txt { fat_write(${BOOT_B_PART_OFFSET}, "cmdline.txt") }
+
+    on-resource rootfs.img {
+        delta-source-raw-offset=${ROOTFS_A_PART_OFFSET}
+        delta-source-raw-count=${ROOTFS_A_PART_COUNT}
+        raw_write(${ROOTFS_B_PART_OFFSET})
+    }
+
+    on-finish {
+        uboot_setenv(uboot-env, "b.nerves_fw_application_part0_devpath", ${NERVES_FW_APPLICATION_PART0_DEVPATH})
+        uboot_setenv(uboot-env, "b.nerves_fw_application_part0_fstype", ${NERVES_FW_APPLICATION_PART0_FSTYPE})
+        uboot_setenv(uboot-env, "b.nerves_fw_application_part0_target", ${NERVES_FW_APPLICATION_PART0_TARGET})
+        uboot_setenv(uboot-env, "b.nerves_fw_product", ${NERVES_FW_PRODUCT})
+        uboot_setenv(uboot-env, "b.nerves_fw_description", ${NERVES_FW_DESCRIPTION})
+        uboot_setenv(uboot-env, "b.nerves_fw_version", ${NERVES_FW_VERSION})
+        uboot_setenv(uboot-env, "b.nerves_fw_platform", ${NERVES_FW_PLATFORM})
+        uboot_setenv(uboot-env, "b.nerves_fw_architecture", ${NERVES_FW_ARCHITECTURE})
+        uboot_setenv(uboot-env, "b.nerves_fw_author", ${NERVES_FW_AUTHOR})
+        uboot_setenv(uboot-env, "b.nerves_fw_vcs_identifier", ${NERVES_FW_VCS_IDENTIFIER})
+        uboot_setenv(uboot-env, "b.nerves_fw_misc", ${NERVES_FW_MISC})
+        uboot_setenv(uboot-env, "b.nerves_fw_uuid", "\${FWUP_META_UUID}")
+
+        reboot_param("0 tryboot")
+    }
+
+    on-error {
+    }
+}
+
+task upgrade.unexpected {
+    require-uboot-variable(uboot-env, "a.nerves_fw_platform", "${NERVES_FW_PLATFORM}")
+    require-uboot-variable(uboot-env, "a.nerves_fw_architecture", "${NERVES_FW_ARCHITECTURE}")
+    on-init {
+        error("Please check the media being upgraded. It doesn't look like either the A or B partitions are active.")
+    }
+}
+
+task upgrade.wrongplatform {
+    on-init {
+        error("Expecting platform=${NERVES_FW_PLATFORM} and architecture=${NERVES_FW_ARCHITECTURE}")
+    }
+}
+
+task provision {
+    require-uboot-variable(uboot-env, "a.nerves_fw_platform", "${NERVES_FW_PLATFORM}")
+    require-uboot-variable(uboot-env, "a.nerves_fw_architecture", "${NERVES_FW_ARCHITECTURE}")
+    on-init {
+        include("${NERVES_PROVISIONING}")
+    }
+}
+task provision.wrongplatform {
+    on-init {
+        error("Expecting platform=${NERVES_FW_PLATFORM} and architecture=${NERVES_FW_ARCHITECTURE}")
+    }
+}

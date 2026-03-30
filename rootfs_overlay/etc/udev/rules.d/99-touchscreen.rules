@@ -1,0 +1,11 @@
+# reTerminal (non-DM): seeed-tp via STM32 MCU bridge
+# No calibration matrix needed — panel_orientation (RIGHT_UP) in the
+# panel driver tells libinput to auto-rotate touch coordinates.
+SUBSYSTEM=="input", KERNEL=="event*", ATTRS{name}=="seeed-tp", \
+  MODE="0666"
+
+# reTerminal DM: GT9271 Goodix touchscreen (directly on I2C, kernel driver)
+SUBSYSTEM=="input", KERNEL=="event*", DRIVERS=="Goodix-TS", \
+  ENV{ID_INPUT}="1", \
+  ENV{ID_INPUT_TOUCHSCREEN}="1", \
+  MODE="0666", TAG+="uaccess"

@@ -1,0 +1,240 @@
+/*
+ * Copyright (C) 2021 Seeed Studio
+ * MIT License
+ */
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835", "brcm,bcm2708", "brcm,bcm2709", "brcm,bcm2711";
+
+    fragment@0 {
+        target-path="/";
+        __overlay__ {
+            hardware = "reTerminal V1.9";
+        };
+    };
+
+    fragment@1 {
+        target = <&dsi1>;
+        __overlay__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            status = "okay";
+
+            port {
+                dsi_out_port: endpoint {
+                    remote-endpoint = <&panel_dsi_port>;
+                };
+            };
+        };
+    };
+    
+    fragment@2 {
+        target = <&gpio>;
+        __overlay__ {
+            power_key_pin: power_key_pin {
+                brcm,pins = <13>;
+                brcm,function = <0>;
+                brcm,pull = <2>;
+            };
+
+            pca9554_irq_pin: pca9554_irq_pin@20 {
+                brcm,pins = <6>;
+                brcm,function = <0>;
+                brcm,pull = <2>;
+            };
+        };
+    };
+
+    fragment@4 {
+        target = <&i2c1>;
+        __overlay__ {
+            status = "okay";
+            clock-frequency = <400000>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+            
+            lis331dlh@19 {
+                compatible = "st,lis331dlh";
+                reg = <0x19>;
+                status = "okay";
+            };
+            
+            mcp23008: gpio@38 {
+                compatible = "nxp,pca9554";
+                reg = <0x38>;
+                status = "okay";
+
+                gpio-controller;
+                #gpio-cells = <2>;
+
+                interrupt-controller;
+                #interrupt-cells = <2>;
+                interrupt-parent = <&gpio>;
+                interrupts = <6 2>;
+
+                pinctrl-names = "default";
+                pinctrl-0 = <&pca9554_irq_pin>;
+
+                input_pins: pinmux {
+                    pins = "gpio0", "gpio1", "gpio2", "gpio3";
+                    bias-pull-up;
+                };
+            };
+
+            ltr303@29 {
+                compatible = "liteon,ltr303";
+                reg = <0x29>;
+                status = "okay";
+            };
+            
+            mipi_dsi: mipi_dsi@45 {
+                compatible = "i2c_dsi,ili9881x";
+                reg = <0x45>;
+                label = "lcd_backlight";
+
+                mcu_auto_reset_enable = <0>;
+                tp_point_rotate = <0>;
+
+                port {
+                    panel_dsi_port: endpoint {
+                        remote-endpoint = <&dsi_out_port>;
+                    };
+                };
+            };
+        };
+    };
+
+    fragment@5 {
+        target = <&i2c3>;
+        __overlay__ {
+            status = "okay";
+            clock-frequency = <100000>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+            
+            pcf8563w@51 {
+                compatible = "nxp,pcf8563w";
+                reg = <0x51>;
+            };
+
+            atecc608a@60 {
+                compatible = "sferalabs,atecc";
+                reg = <0x60>;
+                status = "okay";
+            };
+        };
+    };
+
+    fragment@6 {
+        target = <&leds>;
+        __overlay__ {
+            compatible = "gpio-leds";
+
+            usr_led0: usr_led0 {
+                label = "usr_led0";
+                linux,default-trigger = "default-off";
+                gpios = <&mcp23008 4 1>;
+            };
+
+            usr_led1: usr_led1 {
+                label = "usr_led1";
+                linux,default-trigger = "default-off";
+                gpios = <&mcp23008 5 1>;
+            };
+
+            usr_led2: usr_led2 {
+                label = "usr_led2";
+                linux,default-trigger = "default-off";
+                gpios = <&mcp23008 6 1>;
+            };
+
+            usr_buzzer: usr_led3 {
+                label = "usr_buzzer";
+                linux,default-trigger = "default-off";
+                gpios = <&mcp23008 7 0>;
+                default-state = "off";
+            };
+        };
+    };
+
+    fragment@7 {
+        target-path="/";
+        __overlay__ {
+            power_keys: power_keys {
+                compatible = "gpio-keys";
+                status = "okay";
+                
+                pwr_btn: pwr_btn {
+                    debounce-interval = <5>;
+                    linux,code = <142>;
+                    label = "power_key";
+                    gpios = <&gpio 13 1>;
+                    gpio-key,wakeup;
+                    autorepeat;
+                };
+            };
+        };
+    };
+
+    fragment@8 {
+        target-path="/";
+        __overlay__ {
+            user_keys: user_keys {
+                compatible = "gpio-keys";
+                status = "okay";
+
+                usr_btn0: usr_btn0 {
+                    debounce-interval = <5>;
+                    linux,code = <30>;
+                    label = "usr_btn0";
+                    gpios = <&mcp23008 0 1>;
+                    gpio-key,wakeup;
+                    autorepeat;
+                };
+
+                usr_btn1: usr_btn1 {
+                    debounce-interval = <5>;
+                    linux,code = <31>;
+                    label = "usr_btn1";
+                    gpios = <&mcp23008 2 1>;
+                    gpio-key,wakeup;
+                    autorepeat;
+                };
+
+                usr_btn2: usr_btn2 {
+                    debounce-interval = <5>;
+                    linux,code = <32>;
+                    label = "usr_btn2";
+                    gpios = <&mcp23008 1 1>;
+                    gpio-key,wakeup;
+                    autorepeat;
+                };
+
+                usr_btn3: usr_btn3 {
+                    debounce-interval = <5>;
+                    linux,code = <33>;
+                    label = "usr_btn3";
+                    gpios = <&mcp23008 3 1>;
+                    gpio-key,wakeup;
+                    autorepeat;
+                };
+            };
+        };
+    };
+
+    __overrides__ {
+        int = <&pca9554_irq_pin>,"brcm,pins:0";
+        addr = <&mcp23008>,"reg:0";
+
+        key_pwr = <&pwr_btn>,"linux,code:0";
+        key0 = <&usr_btn0>,"linux,code:0";
+        key1 = <&usr_btn1>,"linux,code:0";
+        key2 = <&usr_btn2>,"linux,code:0";
+        key3 = <&usr_btn3>,"linux,code:0";
+
+        mcu_auto_reset = <&mipi_dsi>,"mcu_auto_reset_enable:0";
+        tp_rotate = <&mipi_dsi>,"tp_point_rotate:0";
+    };
+};
