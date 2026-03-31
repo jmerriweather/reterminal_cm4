@@ -1,8 +1,8 @@
 # Chromasurf — reTerminal CM4
 
-Custom [Nerves](https://nerves-project.org) system for the [Seeed Studio reTerminal](https://wiki.seeedstudio.com/reTerminal/) (CM4, aarch64).
+**Chromasurf** is an industrial IoT platform built on [Elixir](https://elixir-lang.org) and [Nerves](https://nerves-project.org), developed by [Formrausch](https://formrausch.com). It provides the firmware foundation for connected HMI terminals, gateways, and sensor nodes — with automatic network clustering, over-the-air updates, real-time messaging, and full hardware abstraction built in. Designed for production use in manufacturing, process control, and industrial automation.
 
-Built on `nerves_system_br` (Buildroot) with WPE WebKit/Cog browser, GPU acceleration (Mesa V3D), and hardware drivers for all reTerminal peripherals.
+This repository contains the Nerves base system image for the [Seeed Studio reTerminal](https://wiki.seeedstudio.com/reTerminal/) (CM4, aarch64). It includes the Linux kernel, bootloader, DSI display and touch drivers, and all hardware support needed to run Chromasurf applications on this device. Built on `nerves_system_br` (Buildroot) with WPE WebKit/Cog browser and GPU acceleration (Mesa V3D).
 
 ## Using
 
