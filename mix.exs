@@ -1,8 +1,8 @@
-defmodule ChromasurfReterminalCm4.MixProject do
+defmodule ReterminalCm4.MixProject do
   use Mix.Project
 
   @github_organization "chromasurf"
-  @app :chromasurf_reterminal_cm4
+  @app :reterminal_cm4
   @source_url "https://github.com/#{@github_organization}/#{@app}"
   @version Path.join(__DIR__, "VERSION")
            |> File.read!()
