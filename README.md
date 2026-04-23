@@ -10,7 +10,7 @@ Add the system as a dependency in your Nerves app and set `MIX_TARGET=reterminal
 
 ```elixir
 # mix.exs
-{:chromasurf_reterminal_cm4, github: "chromasurf/reterminal-cm4", runtime: false, targets: :reterminal_cm4}
+{:reterminal_cm4, github: "chromasurf/reterminal_cm4", runtime: false, targets: :reterminal_cm4}
 ```
 
 ```bash
