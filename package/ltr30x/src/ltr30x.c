@@ -24,6 +24,23 @@
 #include <linux/iio/triggered_buffer.h>
 #include <linux/version.h>
 
+/*
+ * Kernel 6.14 replaced iio_device_claim_direct_mode()/_release_direct_mode()
+ * (int-returning) with iio_device_claim_direct()/_release_direct() (bool).
+ * Map the old names onto the new API so the call sites stay unchanged.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+static inline int iio_device_claim_direct_mode(struct iio_dev *indio_dev)
+{
+	return iio_device_claim_direct(indio_dev) ? 0 : -EBUSY;
+}
+
+static inline void iio_device_release_direct_mode(struct iio_dev *indio_dev)
+{
+	iio_device_release_direct(indio_dev);
+}
+#endif
+
 #define LTR501_DRV_NAME "ltr501"
 
 #define LTR501_ALS_CONTR 0x80 /* ALS operation mode, SW reset */
@@ -1058,7 +1075,12 @@ static int ltr501_read_event_config(struct iio_dev *indio_dev,
 static int ltr501_write_event_config(struct iio_dev *indio_dev,
 				     const struct iio_chan_spec *chan,
 				     enum iio_event_type type,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+				     /* state is bool since kernel 6.14 */
+				     enum iio_event_direction dir, bool state)
+#else
 				     enum iio_event_direction dir, int state)
+#endif
 {
 	struct ltr501_data *data = iio_priv(indio_dev);
 	int ret;

@@ -12,6 +12,28 @@ follows:
    releases, and Linux kernel updates. They're also made to fix bugs and add
    features to the build infrastructure.
 
+## v1.2.0
+
+Minor update for a major Buildroot release: tracks `nerves_system_br` v1.34.0
+and `kiosk_system_rpi4` v2.1.0, bringing a new Erlang/OTP, Linux kernel, and
+toolchain.
+
+**Breaking for downstream:** the image now ships Erlang/OTP 29, so consuming
+projects must build with OTP 29 (Elixir 1.20+). Devices using a NervesKey /
+ATECC608 must update `nerves_key_pkcs11` to `~> 1.3` to avoid a TLS segfault.
+
+* Changes
+  * Use Liberation fonts as the default sans-serif/serif/monospace families
+    (fontconfig aliases, from `kiosk_system_rpi4` v2.1.0) — fixes rendering
+    issues in WebKit.
+  * Remove the `pigpio` package — dropped upstream in Buildroot 2026.05 (no
+    longer maintained). Use `libgpiod` / `circuits_gpio` for GPIO.
+
+* Updated dependencies
+  * [nerves_system_br v1.34.0](https://github.com/nerves-project/nerves_system_br/releases/tag/v1.34.0)
+    (Erlang/OTP 29.0.2, Buildroot 2026.05, GCC 15.3.0)
+  * Linux kernel 6.18 (Raspberry Pi `stable_20260527` tag), RPi firmware 1.20260521
+
 ## v1.1.4
 
 Security/bug fix update that tracks `nerves_system_br` v1.33.9 (up from
