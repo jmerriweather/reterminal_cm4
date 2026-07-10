@@ -1,5 +1,9 @@
 # Chromasurf — reTerminal CM4
 
+<img src="assets/images/reterminal.jpg" alt="Seeed Studio reTerminal" width="480">
+
+<sub>Image: © [Seeed Studio](https://wiki.seeedstudio.com/reTerminal/)</sub>
+
 **Chromasurf** is an industrial IoT platform built on [Elixir](https://elixir-lang.org) and [Nerves](https://nerves-project.org), developed by [Formrausch](https://formrausch.com). It provides the firmware foundation for connected HMI terminals, gateways, and sensor nodes — with automatic network clustering, over-the-air updates, real-time messaging, and full hardware abstraction built in. Designed for production use in manufacturing, process control, and industrial automation.
 
 This repository contains the Nerves base system image for the [Seeed Studio reTerminal](https://wiki.seeedstudio.com/reTerminal/) (CM4, aarch64). It includes the Linux kernel, bootloader, DSI display and touch drivers, and all hardware support needed to run Chromasurf applications on this device. Built on `nerves_system_br` (Buildroot) with WPE WebKit/Cog browser and GPU acceleration (Mesa V3D).
@@ -19,6 +23,8 @@ mix deps.get
 mix firmware
 mix burn
 ```
+
+The system ships Erlang/OTP 29 — your application needs Elixir ≥ 1.20. When using NervesKey/ATECC608A, depend on `nerves_key_pkcs11 ~> 1.3`.
 
 ## Hardware Overview
 
@@ -201,17 +207,17 @@ mix compile
 mix nerves.artifact
 ```
 
-WebKit compilation is slow and memory-hungry — retry on OOM.
+WebKit compilation is slow and memory-hungry. If the build gets OOM-killed, simply run `mix compile` again — Buildroot resumes where it left off.
 
 ## Linux Kernel
 
-Kernel: Linux 6.12 (Raspberry Pi fork)
-Config: `linux-6.12.defconfig` (stripped-down for Nerves)
+Kernel: Linux 6.18 (Raspberry Pi fork, tag `stable_20260527`)
+Config: `linux-6.18.defconfig` (stripped-down for Nerves)
 Custom patches: `linux/ili9881c_fix.patch` (DSI display driver fix)
 
 ---
 
-[formrausch](https://formrausch.com) /ˈfɔʁmˌʁaʊ̯ʃ/ is a creative studio uniting designers and developers to build beautiful, functional digital products.
+<img src="assets/images/fr_io_logo_signet_red.svg" alt="formrausch logo" height="24" align="top"> [formrausch](https://formrausch.com) /ˈfɔʁmˌʁaʊ̯ʃ/ is a creative studio uniting designers and developers to build beautiful, functional digital products.
 
 ## License
 

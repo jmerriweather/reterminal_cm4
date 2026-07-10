@@ -12,6 +12,15 @@ follows:
    releases, and Linux kernel updates. They're also made to fix bugs and add
    features to the build infrastructure.
 
+## v1.2.1
+
+Documentation-only update — no functional changes to the image.
+
+* Changes
+  * README: add a device photo, correct the kernel documentation (Linux 6.18,
+    `linux-6.18.defconfig`), document the OTP 29 / Elixir 1.20+ requirement,
+    and clarify that an OOM-killed build resumes by re-running `mix compile`.
+
 ## v1.2.0
 
 Minor update for a major Buildroot release: tracks `nerves_system_br` v1.34.0
