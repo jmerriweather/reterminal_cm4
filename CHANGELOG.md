@@ -12,6 +12,17 @@ follows:
    releases, and Linux kernel updates. They're also made to fix bugs and add
    features to the build infrastructure.
 
+## v1.2.2
+
+Build tooling — no functional changes to the image.
+
+* Changes
+  * macOS builds can now run in an Apple `container` Linux VM (no Docker or
+    remote build server needed) via
+    [nerves_container](https://github.com/chromasurf/nerves_container) — it is
+    auto-selected on Apple Silicon and falls back to Docker otherwise. Upstream
+    support is proposed in nerves-project/nerves#1190.
+
 ## v1.2.1
 
 Documentation-only update — no functional changes to the image.

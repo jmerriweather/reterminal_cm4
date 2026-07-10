@@ -44,6 +44,14 @@ defmodule ReterminalCm4.MixProject do
       artifact_sites: [
         {:github_releases, "#{@github_organization}/#{@app}"}
       ],
+      # macOS builds go through NervesContainer (Apple containers on Apple
+      # Silicon with the container CLI, otherwise Docker); all other hosts
+      # keep the stock Nerves runner selection untouched.
+      build_runner: if(match?({:unix, :darwin}, :os.type()), do: NervesContainer.BuildRunner),
+      # WebKit compilation is memory-hungry: give the build VM all host RAM
+      # and cap parallelism so ~9 concurrent WebCore TUs (2-4 GB each) fit —
+      # -j13 on 32G hosts gets the compiler OOM-killed.
+      build_runner_config: [cpus: 8, memory: :host],
       build_runner_opts: build_runner_opts(),
       platform: Nerves.System.BR,
       platform_config: [
@@ -67,6 +75,7 @@ defmodule ReterminalCm4.MixProject do
   defp deps do
     [
       {:nerves, "~> 1.11", runtime: false},
+      {:nerves_container, github: "chromasurf/nerves_container", tag: "v0.1.0", runtime: false},
       {:nerves_system_br, "1.34.0", runtime: false},
       {:nerves_toolchain_aarch64_nerves_linux_gnu, "~> 15.3.0", runtime: false},
       {:nerves_system_linter, "~> 0.4", only: [:dev, :test], runtime: false},
