@@ -12,6 +12,33 @@ follows:
    releases, and Linux kernel updates. They're also made to fix bugs and add
    features to the build infrastructure.
 
+## v1.2.3
+
+Makes a firmware that fails to boot say so, plus the Cog-on-DRM kiosk example
+that had been sitting unreleased since v1.2.2.
+
+* Changes
+  * `rootfs_overlay/etc/erlinit.config`: send the IEx prompt to `ttyS0` instead
+    of `tty1`. On a kiosk Cog owns the DRM device, so a prompt on `tty1` cannot
+    be reached — and since everything the VM writes follows this setting, crash
+    reports went there too. A firmware that died during boot was
+    indistinguishable from one with a black screen. The headless sibling
+    (`recomputer_r100x_cm4`) has always been on `ttyS0`; a display Cog has taken
+    over is no more reachable than no display at all. `-s /usr/bin/nbtty` now
+    also matches what its own comment says it is for. Downstream can put it back
+    with `config :nerves, :erlinit, ctty: "tty1"`.
+  * `cmdline-a.txt` / `cmdline-b.txt`: `loglevel=0` → `loglevel=7`. At 0 even a
+    kernel failure during early boot is silent, before Erlang starts and
+    `nerves_logging`'s kmsg tailer can pick anything up. The kernel console is on
+    `tty3`, so this does not reach the panel and the kiosk stays clean.
+  * `examples/kiosk_drm.ex`: the Cog-on-DRM kiosk pipeline, documented as an
+    example — merged after v1.2.2 but never released.
+
+Both console changes were found while bringing up `myelin_demo` on the DM
+variant, where a broken release stayed invisible for a day because the console
+pointed at a display the browser had taken over. The same fix ships there as
+v1.2.4.
+
 ## v1.2.2
 
 Build tooling — no functional changes to the image.
