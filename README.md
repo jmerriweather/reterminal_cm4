@@ -131,6 +131,26 @@ The system includes Weston compositor and Cog WebKit browser for kiosk applicati
 
 Remote WebKit Inspector is available on port 9222 when `WEBKIT_INSPECTOR_HTTP_SERVER=0.0.0.0:9222` is set.
 
+### Rendering Performance
+
+The system ships with three performance defaults; apps do not need to configure anything:
+
+- **GPU painting**: `/etc/erlinit.config` sets `WEBKIT_SKIA_GPU_PAINTING_THREADS=4`, so
+  WPE WebKit's Skia rasterizes on the v3d GPU. Cog inherits the variable through the
+  BEAM's environment. Without it, Skia paints on the CPU with `nCores/2` worker threads
+  (measured on the reTerminal DM, same SoC: ~30 fps instead of ~60 fps when scrolling
+  image-heavy pages). Override per launch via the `env:` option of the process that
+  starts Cog.
+- **CPU governor**: the kernel defaults to `performance`
+  (`CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE`). `schedutil` idles at 600 MHz and
+  oscillates under scroll load, which costs frame deadlines (p50 27 ms vs 17 ms).
+- **Transparent Hugepages**: enabled (`CONFIG_TRANSPARENT_HUGEPAGE`), which lets the
+  v3d driver use Super Pages (boot log: `v3d ... Using Transparent Hugepages`).
+
+Known limitation: content with `box-shadow` on scrolling surfaces stalls WPE 2.50's
+rendering pipeline regardless of these settings — avoid soft shadows in kiosk UIs.
+Analysis and reproduction: `docs/wpe-box-shadow-raf-stall.md` in the chromasurf monorepo.
+
 ## Security
 
 ### ATECC608A
