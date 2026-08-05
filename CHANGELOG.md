@@ -12,6 +12,39 @@ follows:
    releases, and Linux kernel updates. They're also made to fix bugs and add
    features to the build infrastructure.
 
+## v1.2.4
+
+Makes the browser fast by default — the same three changes as reterminal_dm_cm4
+v1.2.5, ported over. Profiled on the reTerminal DM (same SoC): image-heavy
+pages ran at ~30 fps with the CPU rasterizing and the GPU idle; with these
+defaults the same pages hold ~60 fps (p50 frame time 17 ms) and touch flicks
+feel fluid.
+
+* Changes
+  * `rootfs_overlay/etc/erlinit.config`: set `WEBKIT_SKIA_GPU_PAINTING_THREADS=4`
+    system-wide. Without it, WPE WebKit 2.50's Skia paints on the CPU with
+    `nCores/2` worker threads while the v3d GPU idles. Every app that launches
+    Cog inherits the variable through the BEAM's environment and can still
+    override it per launch. Note for apps that set their own
+    `config :nerves, :erlinit` overrides: Nerves merges against the system
+    *source* in `deps/`, so those apps pick this default up once they depend on
+    this release.
+  * `linux-6.18.defconfig`: default the cpufreq governor to `performance`
+    (`CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE`). `schedutil` idles at 600 MHz
+    and oscillates between 1.3 and 2.0 GHz under scroll load; measured p50
+    frame time was 27 ms vs 17 ms with `performance`. Kiosks on mains power
+    have no reason to save that energy; `schedutil` remains available at
+    runtime via sysfs.
+  * `linux-6.18.defconfig`: enable `CONFIG_TRANSPARENT_HUGEPAGE`, which the v3d
+    driver uses for Super Pages (fewer GPU-MMU TLB misses on large textures).
+    The boot log's "Transparent Hugepage support is recommended" warning turns
+    into "Using Transparent Hugepages".
+  * `README.md`: new "Rendering Performance" section documenting the three
+    defaults and a known WPE 2.50 limitation (`box-shadow` on scrolling content
+    stalls the rendering pipeline regardless of settings — analysis in the
+    chromasurf monorepo under `docs/wpe-box-shadow-raf-stall.md`).
+    `examples/kiosk_drm.ex` notes that GPU painting needs no per-app env entry.
+
 ## v1.2.3
 
 Makes a firmware that fails to boot say so, plus the Cog-on-DRM kiosk example

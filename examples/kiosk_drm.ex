@@ -69,6 +69,10 @@ defmodule Monitor.OS.KioskDrm do
            url
          ],
          [
+           # GPU painting (WEBKIT_SKIA_GPU_PAINTING_THREADS=4) needs no entry
+           # here: the system sets it in /etc/erlinit.config, and Cog inherits
+           # it through the BEAM's environment. Add it to this list only to
+           # override the system default.
            env: [
              {"XDG_RUNTIME_DIR", "#{dir}/nerves_weston"},
              {"WEBKIT_INSPECTOR_HTTP_SERVER", "0.0.0.0:9222"}
