@@ -12,6 +12,35 @@ follows:
    releases, and Linux kernel updates. They're also made to fix bugs and add
    features to the build infrastructure.
 
+## v1.2.5
+
+Fixes the web process crash around cross-site navigations:
+
+    wl_display#1: error 0: invalid object 12
+    (WPEWebProcess:497): WPE-FDO-ERROR **: Failed to bind wl_compositor
+
+WPEBackend-fdo offers `zwp_linux_dmabuf_v1` at version 4 but implements
+`get_surface_feedback` as an empty stub, so no server-side resource exists for
+the id the client allocated. Mesa 25.2 and newer use per-surface feedback and
+destroy that object when a surface goes away, which makes libwayland-server post
+`wl_display.error(invalid object)` — fatal for the whole connection, not just the
+object. The next view target on that connection binds no `wl_compositor` and
+aborts the web process.
+
+* Changes
+  * `patches/wpebackend-fdo/0001-linux-dmabuf-implement-per-surface-feedback.patch`:
+    answer per-surface feedback with the default feedback's tranches. The
+    protocol allows it — per-surface feedback is an optimisation hint.
+  * `nerves_defconfig`: `BR2_GLOBAL_PATCH_DIR` gained
+    `$(NERVES_DEFCONFIG_DIR)/patches` so this system can carry patches of its own.
+  * `mix.exs`: added `patches` to `package_files/0`, so patch-only changes
+    invalidate the artifact checksum. Note that `package` and `external.mk` are
+    still missing there — out-of-tree kernel module changes do not bump the
+    checksum today.
+
+See `docs/wpe-fdo-surface-feedback-crash.md` in the monorepo for the protocol
+trace. The bug is still present upstream on WPEBackend-fdo `main`.
+
 ## v1.2.4
 
 Makes the browser fast by default — the same three changes as reterminal_dm_cm4

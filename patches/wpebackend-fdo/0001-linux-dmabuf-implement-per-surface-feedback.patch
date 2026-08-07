@@ -1,0 +1,54 @@
+Subject: [PATCH] linux-dmabuf: implement per-surface feedback
+
+The zwp_linux_dmabuf_v1 global is created at version 4, which covers both
+get_default_feedback and get_surface_feedback. Only the former creates a
+resource; the latter is a stub that returns without touching the id the client
+just allocated.
+
+Mesa 25.2 and newer request per-surface feedback. Mesa keeps the proxy and
+destroys it when the surface goes away, at which point libwayland-server cannot
+resolve the id and posts wl_display.error(invalid object), which is fatal for
+the connection -- not just for that object. The next view target initialising on
+the same connection binds no wl_compositor and WS::BaseTarget::initialize()
+calls g_error(), aborting the web process:
+
+    wl_display#1: error 0: invalid object 12
+    (WPEWebProcess:497): WPE-FDO-ERROR **: Failed to bind wl_compositor
+
+On a Raspberry Pi CM4 with Cog 0.18.5, WPE WebKit 2.50.5 and Mesa 26.1.2 the web
+process died on every third cross-site navigation.
+
+Answer per-surface feedback with the default feedback's tranches. The protocol
+permits it: per-surface feedback is an optimisation hint, and a client that gets
+the default tranches is still correct.
+
+See docs/wpe-fdo-surface-feedback-crash.md in the chromasurf monorepo for the
+full protocol trace, and https://github.com/Igalia/cog/issues/774 for the
+related boot-time crash from the same Mesa change.
+
+---
+ src/linux-dmabuf/linux-dmabuf.cpp | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+--- a/src/linux-dmabuf/linux-dmabuf.cpp
++++ b/src/linux-dmabuf/linux-dmabuf.cpp
+@@ -396,12 +396,15 @@
+ }
+ 
+ static void
+-linux_dmabuf_get_surface_feedback(struct wl_client*,
+-                                  struct wl_resource*,
+-                                  uint32_t /* dmabuf_feedback_id */,
++linux_dmabuf_get_surface_feedback(struct wl_client *client,
++                                  struct wl_resource *dmabuf_resource,
++                                  uint32_t dmabuf_feedback_id,
+                                   struct wl_resource*)
+ {
+-    // We don't support per surface feedback, but since we claim to support version 4 we need to provide an implementation.
++    // No surface-specific tranches to offer, but the resource has to exist: the
++    // client destroys it on surface teardown, and an unknown object id makes
++    // libwayland fail the whole connection.
++    linux_dmabuf_get_default_feedback(client, dmabuf_resource, dmabuf_feedback_id);
+ }
+ 
+ static const struct zwp_linux_dmabuf_v1_interface linux_dmabuf_implementation = {
