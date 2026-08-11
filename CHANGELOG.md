@@ -12,6 +12,27 @@ follows:
    releases, and Linux kernel updates. They're also made to fix bugs and add
    features to the build infrastructure.
 
+## v1.2.6
+
+Takes the kernel log off the panel, and drops the `nerves_container` add-on now
+that Nerves ships the Apple `container` build runner itself.
+
+* Changes
+  * `cmdline-a.txt` / `cmdline-b.txt`: drop `console=tty3`. v1.2.3 raised
+    `loglevel` from 0 to 7 on the assumption that a kernel console on `tty3`
+    never reaches the display. It does: `console=tty3` registers a VT console,
+    and fbcon paints that VT onto the framebuffer, so the boot messages stood on
+    the panel until Cog claimed DRM master. Without it the kernel talks to
+    `serial0` only — which is where v1.2.3 wanted those logs read anyway, and
+    the full `loglevel=7` stream is still there.
+  * `mix.exs`: require `{:nerves, "~> 1.15"}` and drop both the
+    `nerves_container` dependency and the explicit `build_runner:` selection.
+    Nerves 1.15.0 ships the Apple `container` build runner upstream (the same
+    code) and selects it on Apple Silicon by itself, falling back to Docker
+    elsewhere. Build volumes carry over unchanged — same names, same
+    `.container_id`, same `/home/nerves/project` working directory — so this
+    costs no rebuild.
+
 ## v1.2.5
 
 Fixes the web process crash around cross-site navigations:
