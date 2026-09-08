@@ -61,9 +61,18 @@
                 status = "okay";
             };
             
-            mcp23008: gpio@38 {
-                compatible = "nxp,pca9554";
-                reg = <0x38>;
+            /*
+             * This board fits an MCP23008 at 0x20, not a PCA9554A at 0x38.
+             * Verified on the unit: nothing answers at 0x38 on any i2c bus,
+             * and the chip at 0x20 has the MCP23008 register map (11
+             * registers, GPIO at 0x09) rather than the PCA9554 four. Both
+             * Seeed upstream and the stock system declare 0x38, so the
+             * expander never probes and the LEDs, buzzer and buttons are
+             * all dead.
+             */
+            mcp23008: gpio@20 {
+                compatible = "microchip,mcp23008";
+                reg = <0x20>;
                 status = "okay";
 
                 gpio-controller;

@@ -5,12 +5,14 @@ fixup_file=fixup4.dat
 # Optional Overclocking: Max for cm4
 # https://www.jeffgeerling.com/blog/2020/overclocking-raspberry-pi-compute-module-4
 
-over_voltage=6
+# Overclock removed: an entry controller has no use for 2 GHz, and the stock
+# arm_freq/over_voltage pair produced an undervoltage event at every boot.
+#over_voltage=6
 
 #arm_freq=2147
-arm_freq=2000
+#arm_freq=2000
 
-gpu_freq=750
+#gpu_freq=750
 gpu_mem=256
 
 arm_boost=1
@@ -54,7 +56,7 @@ dtoverlay=disable-bt
 dtoverlay=disable-wifi
 
 
-dtoverlay=reTerminal,tp_rotate=1
+dtoverlay=reTerminal,tp_rotate=0
 dtoverlay=tpm-spi-slx9670
 
 # Prevent GPU firmware from setting up display modes — let kernel handle DSI
