@@ -1,7 +1,10 @@
 defmodule ReterminalCm4.MixProject do
   use Mix.Project
 
-  @github_organization "chromasurf"
+  # This branch carries hardware fixes for the original Seeed reTerminal.
+  # Publish matching prebuilt system artifacts from the fork so application
+  # builds do not need to rebuild Buildroot and the kiosk stack.
+  @github_organization "jmerriweather"
   @app :reterminal_cm4
   @source_url "https://github.com/#{@github_organization}/#{@app}"
   @version Path.join(__DIR__, "VERSION")
@@ -42,7 +45,8 @@ defmodule ReterminalCm4.MixProject do
     [
       type: :system,
       artifact_sites: [
-        {:github_releases, "#{@github_organization}/#{@app}"}
+        {:github_releases, "#{@github_organization}/#{@app}",
+         tag: "poe-entry-v#{@version}"}
       ],
       # WebKit compilation is memory-hungry: give the build VM all host RAM
       # and cap parallelism so ~9 concurrent WebCore TUs (2-4 GB each) fit —
@@ -87,7 +91,7 @@ defmodule ReterminalCm4.MixProject do
       extras: ["README.md", "CHANGELOG.md"],
       main: "readme",
       assets: %{"assets" => "./assets"},
-      source_ref: "v#{@version}",
+      source_ref: "poe-entry-v#{@version}",
       source_url: @source_url,
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]

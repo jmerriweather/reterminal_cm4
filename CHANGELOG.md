@@ -9,8 +9,16 @@ follows:
    may also include Erlang/OTP and Linux kernel updates. These are made four
    times a year shortly after the Buildroot releases.
 3. Patch version updates are made for Buildroot minor releases, Erlang/OTP
-   releases, and Linux kernel updates. They're also made to fix bugs and add
-   features to the build infrastructure.
+releases, and Linux kernel updates. They're also made to fix bugs and add
+features to the build infrastructure.
+
+## poe-entry-v1.2.6
+
+The `poe-entry` branch adds the original reTerminal's front-panel expander
+address and pinctrl support, touch rotation, build-host tools, a resilient
+source mirror, and bounded build parallelism. Its prebuilt system artifact is
+published from `jmerriweather/reterminal_cm4` under this distinct tag. It must
+not be substituted for upstream `v1.2.6` on other hardware.
 
 ## v1.2.6
 
