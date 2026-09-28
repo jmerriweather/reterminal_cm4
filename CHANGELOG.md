@@ -12,6 +12,19 @@ follows:
 releases, and Linux kernel updates. They're also made to fix bugs and add
 features to the build infrastructure.
 
+## poe-entry-v1.2.7
+
+Makes a manual revert work. `fwup-ops.conf` defined `NERVES_FW_PLATFORM` as
+`"rpi4"` before including `fwup_include/fwup-common.conf`, and fwup's
+`define()` keeps the first value, so the `ops.fw` built into the root
+filesystem required `a/b.nerves_fw_platform=rpi4` while every install and
+upgrade from `fwup.conf` writes `reterminal_cm4`. `Nerves.Runtime.revert()`
+therefore always failed with "Expecting platform=rpi4 and architecture=arm".
+The ops config now takes its metadata from `fwup-common.conf` alone, as
+`nerves_system_rpi4` does, so the revert requirements check `reterminal_cm4`
+and still refuse any other platform. `validate` and `prevent-revert` carry no
+platform requirement and are unchanged.
+
 ## poe-entry-v1.2.6
 
 The `poe-entry` branch adds the original reTerminal's front-panel expander
