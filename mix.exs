@@ -53,6 +53,13 @@ defmodule ReterminalCm4.MixProject do
       # -j13 on 32G hosts gets the compiler OOM-killed.
       build_runner_config: [cpus: 8, memory: :host],
       build_runner_opts: build_runner_opts(),
+      # Buildroot's host packages do not build on a bleeding-edge host (on
+      # Arch with glibc 2.42, host-tar 1.35 fails to compile), so a Linux
+      # host can ask for the Nerves Docker runner, which builds in the
+      # nerves_system_br image with the host tools Buildroot expects:
+      #   NERVES_BUILD_RUNNER=docker mix nerves.artifact
+      # Unset, Nerves picks its default (local on Linux, a container on macOS).
+      build_runner: build_runner(),
       platform: Nerves.System.BR,
       platform_config: [
         defconfig: "nerves_defconfig"
@@ -131,6 +138,13 @@ defmodule ReterminalCm4.MixProject do
       "README.md",
       "VERSION"
     ]
+  end
+
+  defp build_runner() do
+    case System.get_env("NERVES_BUILD_RUNNER") do
+      "docker" -> Nerves.Artifact.BuildRunners.Docker
+      _ -> nil
+    end
   end
 
   defp build_runner_opts() do
