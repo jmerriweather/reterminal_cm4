@@ -52,7 +52,12 @@ dtoverlay=vc4-kms-v3d,cma-512
 dtoverlay=i2c1,pins_2_3
 dtoverlay=i2c3,pins_4_5
 
-dtoverlay=disable-bt
+# Bluetooth on for the panel's claim (poe-entry ADR-038). Without disable-bt
+# the PL011 (ttyAMA0) drives the radio and the mini UART (ttyS0, serial0)
+# takes GPIO 14/15, which is the console erlinit names. krnbt=off keeps the
+# kernel off the radio: userspace speaks HCI on ttyAMA0 and loads
+# BCM4345C0.hcd itself. Wi-Fi stays off.
+dtparam=krnbt=off
 dtoverlay=disable-wifi
 
 

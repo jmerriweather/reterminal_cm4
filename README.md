@@ -198,7 +198,9 @@ cmd("amixer cset numid=3 1")
 
 ## Supported WiFi Devices
 
-The onboard Raspberry Pi CM4 WiFi module (`brcmfmac` driver) is included but **disabled by default** via `dtoverlay=disable-wifi` and `dtoverlay=disable-bt` in `config.txt`. Remove these overlays to re-enable.
+The onboard Raspberry Pi CM4 WiFi module (`brcmfmac` driver) is included but **disabled by default** via `dtoverlay=disable-wifi` in `config.txt`. Remove the overlay to re-enable.
+
+Bluetooth is on from `poe-entry-v1.2.8`, for userspace only: `dtparam=krnbt=off` keeps the kernel off the radio, the PL011 (`/dev/ttyAMA0`) is wired to it, and `BCM4345C0.hcd` is in `/lib/firmware/brcm` for the HCI stack to load. The serial console is the mini UART, `ttyS0`, on GPIO 14/15.
 
 ## Provisioning
 

@@ -12,6 +12,18 @@ follows:
 releases, and Linux kernel updates. They're also made to fix bugs and add
 features to the build infrastructure.
 
+## poe-entry-v1.2.8
+
+Turns the CM4's Bluetooth on for userspace, for the panel's claim over BLE
+(poe-entry ADR-038). `config.txt` drops `dtoverlay=disable-bt`, so the PL011
+(`ttyAMA0`) drives the radio and the mini UART (`ttyS0`) returns to GPIO 14/15,
+the console `erlinit.config` already names; under `disable-bt` that port was
+disabled and the kernel console was the PL011. `dtparam=krnbt=off` keeps the
+kernel off the radio (it has no `CONFIG_BT`), so the HCI stack opens
+`ttyAMA0` itself. `BR2_PACKAGE_RPI_DISTRO_BLUEZ_FIRMWARE` installs
+`BCM4345C0.hcd` under `/lib/firmware/brcm` for that stack to load. Wi-Fi
+stays off.
+
 ## poe-entry-v1.2.7
 
 Makes a manual revert work. `fwup-ops.conf` defined `NERVES_FW_PLATFORM` as
